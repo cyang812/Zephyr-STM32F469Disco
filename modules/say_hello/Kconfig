@@ -1,0 +1,12 @@
+# create a new option in Kconfig for the say_hello module
+
+config SAY_HELLO
+    bool "Basic print test to console"
+    default n # Set the library to be disabled by default
+    depends on PRINTK
+    help
+      Enable this option to include a simple print test that outputs
+      "Hello, World!" to the console.
+
+      This is useful for verifying that the console output is working
+      correctly in your Zephyr application.

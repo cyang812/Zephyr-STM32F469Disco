@@ -21,8 +21,10 @@ myapp/
 
 - 闪烁开发板上的 LED（验证 GPIO 配置和控制）
 - 通过串口打印一个随机的 uint32 数值和一个 double 浮点数（验证串口通信、随机数生成和浮点数打印功能）
+- 如果在 Kconfig 中启用自定义模块 `say_hello`，则每秒还会通过串口输出一条来自该模块的问候信息（验证自定义模块集成和 Kconfig 配置功能）
 
-该示例可用于快速验证串口、LED、随机数和浮点数打印等基础功能是否正常，是后续开发的良好基础
+
+该示例可用于快速验证串口、LED、随机数、浮点数打印以及 Kconfig 配置和自定义模块集成等基础功能是否正常，是后续开发的良好基础
 
 ## 使用方法
 
@@ -80,15 +82,22 @@ myapp/
     你将会在串口终端看到如下输出，每秒刷新一次：
 
     ```
-    LED state: OFF
-    Random value: 926324701
-    Random double: 1.215677
     LED state: ON
-    Random value: 1181891265
-    Random double: 1.275181
+    Random value: 1943892486
+    Random double: 1.452598
+    Hello, World! From say_hello modules.
     LED state: OFF
-    Random value: 1491022294
-    Random double: 1.347156
+    Random value: 3434347776
+    Random double: 1.799621
+    Hello, World! From say_hello modules.
+    LED state: ON
+    Random value: 1734830392
+    Random double: 1.403922
+    Hello, World! From say_hello modules.
+    LED state: OFF
+    Random value: 797435391
+    Random double: 1.185667
+    Hello, World! From say_hello modules.
     ```
 
     如果 LED 正常闪烁且串口能持续输出随机数和浮点数，说明 GPIO、串口、随机数和浮点数打印等基础功能均已正常工作

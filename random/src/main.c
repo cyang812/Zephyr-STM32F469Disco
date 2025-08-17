@@ -21,6 +21,8 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/random/random.h>
 
+#include "say_hello.h"
+
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   1000
 
@@ -61,6 +63,8 @@ int main(void)
 
 		double random_double = ((double)random_value / UINT32_MAX + 1.0);
 		printf("Random double: %f\n", random_double);
+
+		say_hello();
 
 		k_msleep(SLEEP_TIME_MS);
 	}
