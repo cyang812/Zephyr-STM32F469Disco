@@ -2,8 +2,8 @@
  * @Author: AIPC cy950812@gmail.com
  * @Date: 2025-08-19 20:10:47
  * @LastEditors: AIPC cy950812@gmail.com
- * @LastEditTime: 2025-08-23 10:27:14
- * @FilePath: _zephyr_stm32f469i_zephyr_samples_myapp_modules_button_drivers_button_button.h
+ * @LastEditTime: 2025-08-23 22:39:38
+ * @FilePath: _myapp_modules_button_drivers_button_button.h
  * @Description:
  *
  * Copyright (c) 2025 by AIPC, All Rights Reserved.
@@ -15,7 +15,7 @@
 #include <zephyr/drivers/gpio.h>
 
 struct button_api {
-    int (*get_press_state)(const struct device *dev, bool *state);
+    int (*get_press_state)(const struct device *dev);
 };
 
 struct button_config {

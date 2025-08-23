@@ -4,7 +4,7 @@
  * @Author: AIPC cy950812@gmail.com
  * @Date: 2025-08-19 21:45:54
  * @LastEditors: AIPC cy950812@gmail.com
- * @LastEditTime: 2025-08-23 22:12:00
+ * @LastEditTime: 2025-08-23 22:42:45
  * @FilePath: _myapp_modules_button_drivers_button_button.c
  * @Description:
  *
@@ -28,7 +28,7 @@ static int custom_button_get_state(const struct device *dev)
     return gpio_pin_get_dt(&config->button_gpio);
 }
 
-const struct custom_button_api custom_button_driver_api = {
+const struct button_api custom_button_driver_api = {
     .get_press_state = custom_button_get_state,
 };
 
