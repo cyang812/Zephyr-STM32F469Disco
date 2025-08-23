@@ -1,32 +1,30 @@
 / {
-    custom-buttons {
-        button_1: custom_button_1 {
+    custom_buttons {
+        /* This node is a simple container for our buttons */
+        compatible = "simple-bus";
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        button_2: custom_button_2@0 {
             compatible = "custom,button";
-            pin = <&d2>;
-            label = "user-button-1";
+            reg = <0>;
+            /* The 'gpios' property is now directly inside the node */
+            gpios = <&gpiog 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            label = "user-button-2";
         };
 
-        button_2: custom_button_2 {
+        button_3: custom_button_3@1 {
             compatible = "custom,button";
-            pin = <&d3>;
-            label = "user-button-2";
+            reg = <1>;
+            /* The 'gpios' property is now directly inside the node */
+            gpios = <&gpioa 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            label = "user-button-3";
         };
     };
 
-     gpio-keys {
-		compatible = "gpio-keys";
-
-        d2: gpio2 {
-            gpios = <&gpiog 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-        };
-
-        d3: gpio3 {
-            gpios = <&gpioa 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-        };
-     };
-
-     aliases {
-        user-sw1 = &button_1;
+    aliases {
+        /* Aliases now point to the correct nodes */
         user-sw2 = &button_2;
+        user-sw3 = &button_3;
     };
 };

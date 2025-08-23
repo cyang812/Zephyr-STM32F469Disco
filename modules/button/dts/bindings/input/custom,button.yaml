@@ -1,16 +1,23 @@
-# Description of the device
-description: Custom button
+# yaml-language-server: $schema=https://docs.zephyrproject.org/latest/_static/dts/bindings/schemas/base.yaml#
 
-# Compatibility with the device tree
+description: Custom GPIO-based button device.
+
 compatible: "custom,button"
 
-# Properties of the device
 properties:
+  reg:
+    type: int
+    required: true
+    description: The device's address on the bus.
+
+  gpios:
+    type: phandle-array
+    required: true
+    description: |
+      The GPIO specification for the button. This should include a phandle
+      to the GPIO controller, the pin number, and the configuration flags
+      (e.g., GPIO_ACTIVE_LOW).
+
   label:
     type: string
-    description: A label for the button
-    default: "Custom Button"
-  pin:
-    type: phandle
-    description: GPIO pin number for the button
-    required: true
+    description: A human-readable label for the button.

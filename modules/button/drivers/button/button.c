@@ -1,89 +1,71 @@
-// Ties to the 'compatible = "custome,button"' node in the devicetree
-#define DT_DRV_COMPAT custome_button
 
+
+/*
+ * @Author: AIPC cy950812@gmail.com
+ * @Date: 2025-08-19 21:45:54
+ * @LastEditors: AIPC cy950812@gmail.com
+ * @LastEditTime: 2025-08-23 22:12:00
+ * @FilePath: _myapp_modules_button_drivers_button_button.c
+ * @Description:
+ *
+ * Copyright (c) 2025 by AIPC, All Rights Reserved.
+ */
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
-#include <zephyr/logging/log.h>
-
+#include <zephyr/sys/printk.h>
+#include <zephyr/devicetree.h>
 #include "button.h"
 
-// Enable logging for this module
-LOG_MODULE_REGISTER(button);
+struct custom_button_config {
+    /* The driver now directly gets the full GPIO spec */
+    struct gpio_dt_spec button_gpio;
+};
 
-//-------------------------------------------------------------------
-// Forward declaration of the button API structure
-
-static int button_init(const struct device *dev);
-static int button_get_press_state(const struct device *dev, bool *state);
-
-//-------------------------------------------------------------------
-// Private functions
-
-static int button_init(const struct device *dev)
+static int custom_button_get_state(const struct device *dev)
 {
+    const struct custom_button_config *config = dev->config;
+    return gpio_pin_get_dt(&config->button_gpio);
+}
+
+const struct custom_button_api custom_button_driver_api = {
+    .get_press_state = custom_button_get_state,
+};
+
+static int custom_button_init(const struct device *dev)
+{
+    const struct custom_button_config *config = dev->config;
     int ret;
 
-    const struct button_config *config = dev->config;
-    const struct gpio_dt_spec *button = &config->button_gpio;
-
-    LOG_DBG("Initializing button with ID: %d", config->id);
-    if (!gpio_is_ready_dt(button)) {
-        LOG_ERR("Button GPIO is not ready");
+    if (!gpio_is_ready_dt(&config->button_gpio)) {
+        printk("Error: button GPIO port %s is not ready\n", config->button_gpio.port->name);
         return -ENODEV;
     }
 
-    ret = gpio_pin_configure_dt(button, GPIO_INPUT);
-    if (ret < 0) {
-        LOG_ERR("Failed to configure button GPIO: %d", ret);
+    ret = gpio_pin_configure_dt(&config->button_gpio, GPIO_INPUT);
+    if (ret != 0) {
+        printk("Error %d: failed to configure pin %d\n", ret, config->button_gpio.pin);
         return ret;
     }
 
-    LOG_INF("Button initialized successfully");
+    printk("Custom button driver initialized for %s on pin %d\n", dev->name, config->button_gpio.pin);
     return 0;
 }
 
-//-------------------------------------------------------------------
-// Public functions
+/* --- This instantiation part is now much simpler --- */
+#define CREATE_CUSTOM_BUTTON(inst)                                                                  \
+    const static struct custom_button_config custom_button_config_##inst = {                        \
+        /* Directly get the 'gpios' property from the instance */                                   \
+        .button_gpio = GPIO_DT_SPEC_INST_GET(inst, gpios),                                          \
+    };                                                                                              \
+                                                                                                    \
+    DEVICE_DT_INST_DEFINE(inst,                                                                     \
+                          &custom_button_init,                                                      \
+                          NULL,                                                                     \
+                          NULL,                                                                     \
+                          &custom_button_config_##inst,                                             \
+                          POST_KERNEL,                                                              \
+                          CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,                                      \
+                          &custom_button_driver_api);
 
-static int button_get_press_state(const struct device *dev, bool *state)
-{
-    const struct button_config *config = dev->config;
-    const struct gpio_dt_spec *button = &config->button_gpio;
-
-    int ret = gpio_pin_get_dt(button);
-    if (ret < 0) {
-        LOG_ERR("Failed to read button state: %d", ret);
-        return ret;
-    }
-
-    *state = (ret == 1);
-    LOG_DBG("Button state: %s", (*state) ? "Pressed" : "Released");
-    return 0;
-}
-
-//-------------------------------------------------------------------
-// Devicetree handling
-
-// Define the public API functions for the driver
-const struct button_api button_api_funcs = {
-    .get_press_state = button_get_press_state,
-};
-
-// Expansion macro to define driver instances
-#define BUTTON_DEFINE(inst)                                                     \
-                                                                                \
-    /* Create an instance of the config struct, populate with DT values */      \
-    static const struct button_config button_config_##inst = {                  \
-        .button_gpio = GPIO_DT_SPEC_GET(                                        \
-            DT_PHANDLE(DT_INST(inst, custome_button), pin), gpios),             \
-        .id = inst                                                             \
-    };                                                                          \
-                                                                                \
-    /* Create a "device" instance from a Devicetree node identifier and */      \
-    /* registers the init function to run during boot. */                       \
-    DEVICE_DT_INST_DEFINE(inst, button_init, NULL, NULL, &button_config_##inst, \
-                          POST_KERNEL, CONFIG_GPIO_INIT_PRIORITY,               \
-                          &button_api_funcs);                                   \
-
-// The DeviceTree build process calls this to create an instanace of structs for
-// each device (button) defined in the devicetree.
-DT_INST_FOREACH_STATUS_OKAY(BUTTON_DEFINE)
+DT_INST_FOREACH_STATUS_OKAY(CREATE_CUSTOM_BUTTON)
