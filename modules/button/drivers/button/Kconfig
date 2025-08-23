@@ -1,0 +1,10 @@
+# Create a new option in menuconfig
+
+config CUSTOM_DRIVERS_BUTTON
+    bool "Enable custom button driver"
+    default n
+    depends on GPIO
+    help
+      This option enables the custom button driver module.
+      If enabled, the button driver will be included in the build.
+      If disabled, the default button driver will be used instead.

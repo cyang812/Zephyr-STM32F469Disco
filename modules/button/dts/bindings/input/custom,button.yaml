@@ -1,0 +1,16 @@
+# Description of the device
+description: Custom button
+
+# Compatibility with the device tree
+compatible: "custom,button"
+
+# Properties of the device
+properties:
+  label:
+    type: string
+    description: A label for the button
+    default: "Custom Button"
+  pin:
+    type: phandle
+    description: GPIO pin number for the button
+    required: true

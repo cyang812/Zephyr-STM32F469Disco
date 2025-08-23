@@ -1,0 +1,32 @@
+/ {
+    custom-buttons {
+        button_1: custom_button_1 {
+            compatible = "custom,button";
+            pin = <&d2>;
+            label = "user-button-1";
+        };
+
+        button_2: custom_button_2 {
+            compatible = "custom,button";
+            pin = <&d3>;
+            label = "user-button-2";
+        };
+    };
+
+     gpio-keys {
+		compatible = "gpio-keys";
+
+        d2: gpio2 {
+            gpios = <&gpiog 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        };
+
+        d3: gpio3 {
+            gpios = <&gpioa 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        };
+     };
+
+     aliases {
+        user-sw1 = &button_1;
+        user-sw2 = &button_2;
+    };
+};
