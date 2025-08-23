@@ -64,7 +64,7 @@ static int button_get_press_state(const struct device *dev, bool *state)
 // Devicetree handling
 
 // Define the public API functions for the driver
-static const struct button_api button_api_funcs = {
+const struct button_api button_api_funcs = {
     .get_press_state = button_get_press_state,
 };
 
