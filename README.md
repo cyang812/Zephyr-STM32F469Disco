@@ -26,6 +26,15 @@ myapp/
 
 该示例可用于快速验证串口、LED、随机数、浮点数打印以及 Kconfig 配置和自定义模块集成等基础功能是否正常，是后续开发的良好基础
 
+### user_button
+
+`user_button` 是一个基于 uno3 兼容扩展板的 Zephyr 应用示例。该扩展板通过 overlay 文件 [`uno3_shield.overlay`](user_button/boards/uno3_shield.overlay) 添加了两个按键（Shield D2、D3）和三个 LED（Shield D9、D10、D11）。在 `user_button` 应用中，主程序支持这两个按键和三个 LED 的控制：
+
+- 按下 Shield D2 或 D3 按键时，分别切换对应 LED 的状态
+- 可以通过串口观察按键和 LED 状态的变化
+
+该示例可用于验证自定义硬件资源（按键和 LED）的集成与控制
+
 ## 使用方法
 
 1. 进入对应应用目录，例如 `random`。
