@@ -1,0 +1,14 @@
+/ {
+    zephyr_user: zephyr_user {
+        rheo: rheo {
+            compatible = "st,stm32-adc-channel";
+            /* PB1 → ADC1_IN9 */
+            io-channels = <&adc1 9>;
+        };
+    };
+};
+
+&adc1 {
+    status = "okay";
+    st,adc-prescaler = <6>;
+};
