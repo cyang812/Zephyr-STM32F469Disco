@@ -1,0 +1,55 @@
+/ {
+    buttons {
+        compatible = "gpio-keys";
+
+        user_button_2: button2 {
+            label = "Shield D2";
+			gpios = <&gpiog 13 GPIO_ACTIVE_HIGH>;
+			zephyr,code = <INPUT_KEY_1>;
+        };
+
+        user_button_3: button3 {
+            label = "Shield D3";
+			gpios = <&gpioa 1 GPIO_ACTIVE_HIGH>;
+			zephyr,code = <INPUT_KEY_2>;
+        };
+    };
+
+    leds {
+        compatible = "gpio-leds";
+
+        shield_led_1: led1 {
+            label = "Shield D9";
+            gpios = <&gpioa 7 GPIO_ACTIVE_LOW>;
+        };
+
+        shield_led_2: led2 {
+            label = "Shield D10";
+            gpios = <&gpioh 6 GPIO_ACTIVE_LOW>;
+        };
+
+        shield_led_3: led3 {
+            label = "Shield D11";
+            gpios = <&gpiob 15 GPIO_ACTIVE_LOW>;
+        };
+    };
+
+    sensors {
+
+        dht11_0: dht11 {
+            compatible = "aosong,dht";
+
+            dio-gpios = <&gpiog 12 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+            friendly-name = "Shield DHT11";
+        };
+    };
+
+    aliases {
+        sw1 = &user_button_2;
+        sw2 = &user_button_3;
+        sled0 = &shield_led_3;
+        sled1 = &shield_led_1;
+        sled2 = &shield_led_2;
+        dht11 = &dht11_0;
+    };
+};
