@@ -1,53 +1,54 @@
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
 #include <zephyr/drivers/adc.h>
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_REGISTER(lm35_app, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(lm35_app);
 
-/* Match the label from overlay */
-#define ADC_CHANNEL_NODE DT_NODELABEL(lm35)
-
-#if !DT_NODE_HAS_STATUS(ADC_CHANNEL_NODE, okay)
-#error "No ADC channel for LM35 in devicetree"
-#endif
-
-static const struct adc_dt_spec adc_ch = ADC_DT_SPEC_GET(ADC_CHANNEL_NODE);
-
-static int16_t sample_buffer;
+#define ADC_RESOLUTION 12
+#define ADC_MAX 4095
+#define ADC_CHANNEL 13      // PC3 = ADC1_IN13
+#define VREF_MV 3300        // STM32 VCC in mV
 
 void main(void)
 {
-    if (!device_is_ready(adc_ch.dev)) {
-        LOG_ERR("ADC device not ready");
+    const struct device *adc_dev = DEVICE_DT_GET(DT_NODELABEL(adc1));
+    if (!device_is_ready(adc_dev)) {
+        LOG_ERR("ADC device not ready!");
         return;
     }
 
-    if (adc_channel_setup_dt(&adc_ch) < 0) {
-        LOG_ERR("Channel setup failed");
-        return;
-    }
+    int16_t sample;
 
-    struct adc_sequence sequence = {
-        .buffer      = &sample_buffer,
-        .buffer_size = sizeof(sample_buffer),
+    const struct adc_channel_cfg channel_cfg = {
+        .gain = ADC_GAIN_1,
+        .reference = ADC_REF_INTERNAL,
+        .acquisition_time = ADC_ACQ_TIME_DEFAULT,
+        .channel_id = ADC_CHANNEL,
+        .differential = 0,
     };
 
-    /* Let Zephyr fill in resolution + channel mask from devicetree */
-    adc_sequence_init_dt(&adc_ch, &sequence);
+    adc_channel_setup(adc_dev, &channel_cfg);
 
     while (1) {
-        int err = adc_read(adc_ch.dev, &sequence);
-        if (err < 0) {
-            LOG_ERR("adc_read failed (%d)", err);
+        struct adc_sequence seq = {
+            .channels = BIT(ADC_CHANNEL),
+            .buffer = &sample,
+            .buffer_size = sizeof(sample),
+            .resolution = ADC_RESOLUTION,
+        };
+
+        if (adc_read(adc_dev, &seq) == 0) {
+            uint32_t mv = sample * VREF_MV / ADC_MAX;   // ADC → mV
+            uint32_t temp_c = mv / 10;                  // °C
+            uint32_t temp_frac = mv % 10;               // 0.1 °C
+
+            LOG_INF("Sample=%d, mV=%d, LM35 temperature=%d.%01d °C",
+                    sample, mv, temp_c, temp_frac);
         } else {
-            LOG_INF("Raw=%d", sample_buffer);
-
-            int32_t mv = sample_buffer;
-            adc_raw_to_millivolts_dt(&adc_ch, &mv);
-
-            float temp_c = mv / 10.0f;  /* LM35: 10 mV / °C */
-            LOG_INF("LM35 temp=%.2f °C", temp_c);
+            LOG_WRN("ADC read failed");
         }
 
-        k_sleep(K_MSEC(1000));
+        k_sleep(K_SECONDS(1));
     }
 }
