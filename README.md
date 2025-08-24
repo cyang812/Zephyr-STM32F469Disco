@@ -111,6 +111,34 @@ myapp/
 
     如果 LED 正常闪烁且串口能持续输出随机数和浮点数，说明 GPIO、串口、随机数和浮点数打印等基础功能均已正常工作
 
+    ```
+    [00:01:50.011,000] <inf> Rheostat: Sample=1
+    [00:01:51.011,000] <inf> Rheostat: Sample=1
+    [00:01:52.011,000] <inf> Rheostat: Sample=1
+    [00:01:53.011,000] <inf> Rheostat: Sample=0
+    [00:01:54.011,000] <inf> Rheostat: Sample=773
+    [00:01:55.011,000] <inf> Rheostat: Sample=1100
+    [00:01:56.011,000] <inf> Rheostat: Sample=1098
+    [00:01:57.011,000] <inf> Rheostat: Sample=1104
+    [00:01:58.011,000] <inf> Rheostat: Sample=3219
+    [00:01:59.011,000] <inf> Rheostat: Sample=3214
+    [00:02:00.012,000] <inf> Rheostat: Sample=3211
+    [00:02:01.012,000] <inf> Rheostat: Sample=3214
+    [00:02:02.012,000] <inf> Rheostat: Sample=3203
+    ```
+
+    ```
+    [00:00:36.003,000] <inf> lm35_app: Sample=560, mV=451, LM35 temperature=45.1 °C
+    [00:00:37.003,000] <inf> lm35_app: Sample=559, mV=450, LM35 temperature=45.0 °C
+    [00:00:38.003,000] <inf> lm35_app: Sample=560, mV=451, LM35 temperature=45.1 °C
+    [00:00:39.003,000] <inf> lm35_app: Sample=561, mV=452, LM35 temperature=45.2 °C
+    [00:00:40.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
+    [00:00:41.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
+    [00:00:42.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
+    [00:00:43.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
+    [00:00:44.004,000] <inf> lm35_app: Sample=563, mV=453, LM35 temperature=45.3 °C
+    ```
+
 ## 依赖
 
 - WSL2 (to be able to download FW under Windwos on ARM platform)

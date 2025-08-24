@@ -1,68 +1,49 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/drivers/adc.h>
-#include <zephyr/sys/printk.h>
+#include <zephyr/logging/log.h>
 
-/*
- * Get a device structure from a devicetree node with alias "potentiometer".
- * This is the modern and recommended way to reference devices.
- */
-static const struct adc_dt_spec pot_spec = ADC_DT_SPEC_GET(DT_ALIAS(potentiometer));
+LOG_MODULE_REGISTER(Rheostat);
 
-// Buffer for the ADC reading
-static int16_t sample_buffer;
-
-/*
- * Define the ADC sequence for a single channel read.
- * This pulls configuration (resolution, etc.) from the device tree.
- */
-static const struct adc_sequence sequence = {
-    .buffer = &sample_buffer,
-    .buffer_size = sizeof(sample_buffer), // Size of the buffer in bytes
-};
+#define ADC_RESOLUTION 12
+#define ADC_MAX 4095
+#define ADC_CHANNEL 9      // PB1 = ADC1_IN9
+#define VREF_MV 3300        // STM32 VCC in mV
 
 void main(void)
 {
-    int err;
-    int32_t val_mv;
-
-    printk("Zephyr ADC Reader Example 🚀\n");
-    printk("Board: %s\n", CONFIG_BOARD);
-
-    // 1. Check if the ADC device is ready
-    if (!device_is_ready(pot_spec.dev)) {
-        printk("ADC controller device not ready\n");
+    const struct device *adc_dev = DEVICE_DT_GET(DT_NODELABEL(adc1));
+    if (!device_is_ready(adc_dev)) {
+        LOG_ERR("ADC device not ready!");
         return;
     }
 
-    // 2. Configure the ADC channel from the device tree spec
-    err = adc_channel_setup_dt(&pot_spec);
-    if (err < 0) {
-        printk("Could not setup channel #%d (err %d)\n", pot_spec.channel_id, err);
-        return;
-    }
+    int16_t sample;
+
+    const struct adc_channel_cfg channel_cfg = {
+        .gain = ADC_GAIN_1,
+        .reference = ADC_REF_INTERNAL,
+        .acquisition_time = ADC_ACQ_TIME_DEFAULT,
+        .channel_id = ADC_CHANNEL,
+        .differential = 0,
+    };
+
+    adc_channel_setup(adc_dev, &channel_cfg);
 
     while (1) {
-        // 3. Perform the ADC read
-        err = adc_read_dt(&pot_spec, &sequence);
-        if (err < 0) {
-            printk("Could not read ADC channel (%d)\n", err);
-            continue;
+        struct adc_sequence seq = {
+            .channels = BIT(ADC_CHANNEL),
+            .buffer = &sample,
+            .buffer_size = sizeof(sample),
+            .resolution = ADC_RESOLUTION,
+        };
+
+        if (adc_read(adc_dev, &seq) == 0) {
+            LOG_INF("Sample=%d", sample);
+        } else {
+            LOG_WRN("ADC read failed");
         }
 
-        // 4. Convert the raw ADC value to millivolts
-        err = adc_raw_to_millivolts_dt(&pot_spec, &sample_buffer);
-        if (err < 0) {
-            printk("Could not convert to millivolts (%d)\n", err);
-            continue;
-        }
-        val_mv = sample_buffer; // After conversion, buffer holds millivolts
-
-        // 5. Print the result
-        printk("ADC reading: %d mV\n", val_mv);
-
-        // Wait before the next reading
-        k_msleep(1000); // Sleep for 1 second
+        k_sleep(K_SECONDS(1));
     }
 }

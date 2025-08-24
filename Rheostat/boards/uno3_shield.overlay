@@ -2,20 +2,22 @@
  * Correct Device Tree Overlay Structure
  */
 
-/ {
-    aliases {
-        potentiometer = &pot_channel;
-    };
-};
-
-// Target the adc1 peripheral
 &adc1 {
-    status = "okay";
+	pinctrl-0 = <&adc1_in9_pb1>;
+	pinctrl-names = "default";
+	st,adc-clock-source = "SYNC";
+	st,adc-prescaler = <4>;
+	status = "okay";
 
-    // ✅ CORRECT: The channel is a CHILD of &adc1
-    pot_channel: channel@9 {
-        reg = <9>;                 // This is now correctly interpreted as a channel number
-        label = "POTENTIOMETER";
-        zephyr,resolution = <12>;
-    };
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	channel@9 {
+		reg = <9>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+		zephyr,vref-mv = <3300>;
+	};
 };
