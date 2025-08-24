@@ -1,0 +1,14 @@
+&adc1 {
+    status = "okay";
+    st,adc-prescaler = <6>;
+};
+
+/ {
+    zephyr_user: zephyr_user {
+        lm35: lm35 {
+            compatible = "st,stm32-adc-channel";
+            io-channels = <&adc1 13>;
+        };
+    };
+};
+
