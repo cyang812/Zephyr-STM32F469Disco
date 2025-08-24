@@ -10,6 +10,18 @@ myapp/
 │   ├── src/
 │   ├── prj.conf
 │   └── CMakeLists.txt
+├── user_button/
+│   ├── src/
+│   ├── prj.conf
+│   └── CMakeLists.txt
+├── LM35/
+│   ├── src/
+│   ├── prj.conf
+│   └── CMakeLists.txt
+├── Rheostat/
+│   ├── src/
+│   ├── prj.conf
+│   └── CMakeLists.txt
 └── ...
 ```
 
@@ -17,7 +29,7 @@ myapp/
 
 ### random
 
-`random` 是一个简单的 Zephyr 应用示例，每秒会执行以下操作：
+[`random`](random/) 是一个简单的 Zephyr 应用示例，每秒会执行以下操作：
 
 - 闪烁开发板上的 LED（验证 GPIO 配置和控制）
 - 通过串口打印一个随机的 uint32 数值和一个 double 浮点数（验证串口通信、随机数生成和浮点数打印功能）
@@ -28,21 +40,45 @@ myapp/
 
 ### user_button
 
-`user_button` 是一个基于 uno3 兼容扩展板的 Zephyr 应用示例。该扩展板通过 overlay 文件 [`uno3_shield.overlay`](user_button/boards/uno3_shield.overlay) 添加了两个按键（Shield D2、D3）和三个 LED（Shield D9、D10、D11）。在 `user_button` 应用中，主程序支持这两个按键和三个 LED 的控制：
+[`user_button`](user_button/) 是一个基于 uno3 兼容扩展板的 Zephyr 应用示例。该扩展板通过 overlay 文件 [`uno3_shield.overlay`](user_button/boards/uno3_shield.overlay) 添加了两个按键（Shield D2、D3）和三个 LED（Shield D9、D10、D11）。在 `user_button` 应用中，主程序支持这两个按键和三个 LED 的控制：
 
 - 按下 Shield D2 或 D3 按键时，分别切换对应 LED 的状态
 - 可以通过串口观察按键和 LED 状态的变化
 
 该示例可用于验证自定义硬件资源（按键和 LED）的集成与控制
 
+### LM35
+
+[`LM35`](LM35/) 应用用于演示如何通过 ADC 采集 LM35 温度传感器的模拟信号，并通过串口输出温度值。主要功能：
+
+- 配置 ADC 通道（PC3 = ADC1_IN13）
+- 每秒采集一次温度数据，并通过串口输出格式为 `lm35_app` 的日志
+- 目前看来温度数据并不是很准确
+
+该示例可用于验证 ADC 的使用
+
+### Rheostat
+
+[`Rheostat`](Rheostat/) 应用用于演示如何通过 ADC 采集电位器（滑动变阻器）的模拟信号，并通过串口输出采样值。主要功能：
+
+- 配置 ADC 通道（PB1 = ADC1_IN9）
+- 每秒采集一次电位器数据，并通过串口输出格式为 `Rheostat` 的日志
+
+该示例可用于验证 ADC 的使用
+
 ## 使用方法
 
-1. 进入对应应用目录，例如 `random`。
+1. 进入对应应用目录，例如 `random`、`LM35` 或 `Rheostat`。
 2. 使用 west 或 cmake 命令进行编译，例如：
 
    ```sh
    west build -p always -b stm32f469i_disco -t menuconfig # open the menuconfig, like enable random and float print
    west build -p always -b stm32f469i_disco  # build the project, the output can be found under build/zephyr/zephyr.bin
+
+   or with custom overlay file
+
+   west build -p always -b stm32f469i_disco -t menuconfig -- -DDTC_OVERLAY_FILE="boards/uno3_shield.overlay"
+   west build -p always -b stm32f469i_disco -- -DDTC_OVERLAY_FILE="boards/uno3_shield.overlay"
    ```
 
 3. 按照各应用目录下的说明进行烧录和运行。
@@ -88,8 +124,9 @@ myapp/
     python -m serial.tools.miniterm "COM6" 115200
     ```
 
-    你将会在串口终端看到如下输出，每秒刷新一次：
+    串口终端输出示例：
 
+    **random 应用：**
     ```
     LED state: ON
     Random value: 1943892486
@@ -99,44 +136,23 @@ myapp/
     Random value: 3434347776
     Random double: 1.799621
     Hello, World! From say_hello modules.
-    LED state: ON
-    Random value: 1734830392
-    Random double: 1.403922
-    Hello, World! From say_hello modules.
-    LED state: OFF
-    Random value: 797435391
-    Random double: 1.185667
-    Hello, World! From say_hello modules.
+    ...
     ```
 
-    如果 LED 正常闪烁且串口能持续输出随机数和浮点数，说明 GPIO、串口、随机数和浮点数打印等基础功能均已正常工作
-
+    **Rheostat 应用：**
     ```
     [00:01:50.011,000] <inf> Rheostat: Sample=1
-    [00:01:51.011,000] <inf> Rheostat: Sample=1
-    [00:01:52.011,000] <inf> Rheostat: Sample=1
-    [00:01:53.011,000] <inf> Rheostat: Sample=0
     [00:01:54.011,000] <inf> Rheostat: Sample=773
-    [00:01:55.011,000] <inf> Rheostat: Sample=1100
-    [00:01:56.011,000] <inf> Rheostat: Sample=1098
     [00:01:57.011,000] <inf> Rheostat: Sample=1104
     [00:01:58.011,000] <inf> Rheostat: Sample=3219
-    [00:01:59.011,000] <inf> Rheostat: Sample=3214
-    [00:02:00.012,000] <inf> Rheostat: Sample=3211
-    [00:02:01.012,000] <inf> Rheostat: Sample=3214
-    [00:02:02.012,000] <inf> Rheostat: Sample=3203
+    ...
     ```
 
+    **LM35 应用：**
     ```
     [00:00:36.003,000] <inf> lm35_app: Sample=560, mV=451, LM35 temperature=45.1 °C
     [00:00:37.003,000] <inf> lm35_app: Sample=559, mV=450, LM35 temperature=45.0 °C
-    [00:00:38.003,000] <inf> lm35_app: Sample=560, mV=451, LM35 temperature=45.1 °C
-    [00:00:39.003,000] <inf> lm35_app: Sample=561, mV=452, LM35 temperature=45.2 °C
-    [00:00:40.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
-    [00:00:41.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
-    [00:00:42.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
-    [00:00:43.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
-    [00:00:44.004,000] <inf> lm35_app: Sample=563, mV=453, LM35 temperature=45.3 °C
+    ...
     ```
 
 ## 依赖
