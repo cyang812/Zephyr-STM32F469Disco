@@ -1,14 +1,21 @@
+/*
+ * Correct Device Tree Overlay Structure
+ */
+
 / {
-    zephyr_user: zephyr_user {
-        rheo: rheo {
-            compatible = "st,stm32-adc-channel";
-            /* PB1 → ADC1_IN9 */
-            io-channels = <&adc1 9>;
-        };
+    aliases {
+        potentiometer = &pot_channel;
     };
 };
 
+// Target the adc1 peripheral
 &adc1 {
     status = "okay";
-    st,adc-prescaler = <6>;
+
+    // ✅ CORRECT: The channel is a CHILD of &adc1
+    pot_channel: channel@9 {
+        reg = <9>;                 // This is now correctly interpreted as a channel number
+        label = "POTENTIOMETER";
+        zephyr,resolution = <12>;
+    };
 };

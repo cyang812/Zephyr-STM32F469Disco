@@ -1,53 +1,68 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
+#include <zephyr/devicetree.h>
 #include <zephyr/drivers/adc.h>
-#include <zephyr/logging/log.h>
+#include <zephyr/sys/printk.h>
 
-LOG_MODULE_REGISTER(rheo_app, LOG_LEVEL_INF);
+/*
+ * Get a device structure from a devicetree node with alias "potentiometer".
+ * This is the modern and recommended way to reference devices.
+ */
+static const struct adc_dt_spec pot_spec = ADC_DT_SPEC_GET(DT_ALIAS(potentiometer));
 
-/* point to zephyr_user.rheo in the overlay */
-#define RHEO_NODE DT_NODELABEL(rheo)
-
-#if !DT_NODE_HAS_STATUS(RHEO_NODE, okay)
-#error "No rheostat ADC channel found in devicetree"
-#endif
-
-static const struct adc_dt_spec adc_ch = ADC_DT_SPEC_GET(RHEO_NODE);
+// Buffer for the ADC reading
 static int16_t sample_buffer;
+
+/*
+ * Define the ADC sequence for a single channel read.
+ * This pulls configuration (resolution, etc.) from the device tree.
+ */
+static const struct adc_sequence sequence = {
+    .buffer = &sample_buffer,
+    .buffer_size = sizeof(sample_buffer), // Size of the buffer in bytes
+};
 
 void main(void)
 {
-    int ret;
+    int err;
+    int32_t val_mv;
 
-    if (!device_is_ready(adc_ch.dev)) {
-        LOG_ERR("ADC device not ready");
+    printk("Zephyr ADC Reader Example 🚀\n");
+    printk("Board: %s\n", CONFIG_BOARD);
+
+    // 1. Check if the ADC device is ready
+    if (!device_is_ready(pot_spec.dev)) {
+        printk("ADC controller device not ready\n");
         return;
     }
 
-    ret = adc_channel_setup_dt(&adc_ch);
-    if (ret < 0) {
-        LOG_ERR("Channel setup failed (%d)", ret);
+    // 2. Configure the ADC channel from the device tree spec
+    err = adc_channel_setup_dt(&pot_spec);
+    if (err < 0) {
+        printk("Could not setup channel #%d (err %d)\n", pot_spec.channel_id, err);
         return;
     }
-
-    struct adc_sequence sequence = {
-        .buffer      = &sample_buffer,
-        .buffer_size = sizeof(sample_buffer),
-        .resolution  = 12,
-    };
-
-    LOG_INF("Using channel %d, vref=%d mV", adc_ch.channel_id, adc_ch.vref_mv);
 
     while (1) {
-        ret = adc_read(adc_ch.dev, &sequence);
-        if (ret == 0) {
-            int32_t mv = sample_buffer;
-            adc_raw_to_millivolts_dt(&adc_ch, &mv);
-            LOG_INF("Raw=%d → %d mV", sample_buffer, mv);
-        } else {
-            LOG_ERR("adc_read failed (%d)", ret);
+        // 3. Perform the ADC read
+        err = adc_read_dt(&pot_spec, &sequence);
+        if (err < 0) {
+            printk("Could not read ADC channel (%d)\n", err);
+            continue;
         }
 
-        k_sleep(K_MSEC(1000));
+        // 4. Convert the raw ADC value to millivolts
+        err = adc_raw_to_millivolts_dt(&pot_spec, &sample_buffer);
+        if (err < 0) {
+            printk("Could not convert to millivolts (%d)\n", err);
+            continue;
+        }
+        val_mv = sample_buffer; // After conversion, buffer holds millivolts
+
+        // 5. Print the result
+        printk("ADC reading: %d mV\n", val_mv);
+
+        // Wait before the next reading
+        k_msleep(1000); // Sleep for 1 second
     }
 }
