@@ -22,6 +22,10 @@ myapp/
 │   ├── src/
 │   ├── prj.conf
 │   └── CMakeLists.txt
+├── DHT11/
+│   ├── src/
+│   ├── prj.conf
+│   └── CMakeLists.txt
 └── ...
 ```
 
@@ -52,7 +56,7 @@ myapp/
 [`LM35`](LM35/) 应用用于演示如何通过 ADC 采集 LM35 温度传感器的模拟信号，并通过串口输出温度值。主要功能：
 
 - 配置 ADC 通道（PC3 = ADC1_IN13）
-- 每秒采集一次温度数据，并通过串口输出格式为 `lm35_app` 的日志
+- 每秒采集一次温度数据
 - 目前看来温度数据并不是很准确
 
 该示例可用于验证 ADC 的使用
@@ -62,13 +66,22 @@ myapp/
 [`Rheostat`](Rheostat/) 应用用于演示如何通过 ADC 采集电位器（滑动变阻器）的模拟信号，并通过串口输出采样值。主要功能：
 
 - 配置 ADC 通道（PB1 = ADC1_IN9）
-- 每秒采集一次电位器数据，并通过串口输出格式为 `Rheostat` 的日志
+- 每秒采集一次电位器数据
 
 该示例可用于验证 ADC 的使用
 
+### DHT11
+
+[`DHT11`](DHT11/) 应用用于演示如何每3秒采集一次 DHT11 温湿度传感器的数据，并通过串口输出结果。主要功能：
+
+- 使用 menuconfig enable DHT driver
+- 每3秒自动采集一次温度和湿度数据
+
+该示例可用于验证对内置 driver 的使用
+
 ## 使用方法
 
-1. 进入对应应用目录，例如 `random`、`LM35` 或 `Rheostat`。
+1. 进入对应应用目录，例如 `random`、`LM35`、`Rheostat` 或 `DHT11`。
 2. 使用 west 或 cmake 命令进行编译，例如：
 
    ```sh
@@ -155,32 +168,11 @@ myapp/
     ...
     ```
 
+    **DHT11 应用：**
     ```
-    [00:01:50.011,000] <inf> Rheostat: Sample=1
-    [00:01:51.011,000] <inf> Rheostat: Sample=1
-    [00:01:52.011,000] <inf> Rheostat: Sample=1
-    [00:01:53.011,000] <inf> Rheostat: Sample=0
-    [00:01:54.011,000] <inf> Rheostat: Sample=773
-    [00:01:55.011,000] <inf> Rheostat: Sample=1100
-    [00:01:56.011,000] <inf> Rheostat: Sample=1098
-    [00:01:57.011,000] <inf> Rheostat: Sample=1104
-    [00:01:58.011,000] <inf> Rheostat: Sample=3219
-    [00:01:59.011,000] <inf> Rheostat: Sample=3214
-    [00:02:00.012,000] <inf> Rheostat: Sample=3211
-    [00:02:01.012,000] <inf> Rheostat: Sample=3214
-    [00:02:02.012,000] <inf> Rheostat: Sample=3203
-    ```
-
-    ```
-    [00:00:36.003,000] <inf> lm35_app: Sample=560, mV=451, LM35 temperature=45.1 °C
-    [00:00:37.003,000] <inf> lm35_app: Sample=559, mV=450, LM35 temperature=45.0 °C
-    [00:00:38.003,000] <inf> lm35_app: Sample=560, mV=451, LM35 temperature=45.1 °C
-    [00:00:39.003,000] <inf> lm35_app: Sample=561, mV=452, LM35 temperature=45.2 °C
-    [00:00:40.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
-    [00:00:41.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
-    [00:00:42.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
-    [00:00:43.004,000] <inf> lm35_app: Sample=562, mV=452, LM35 temperature=45.2 °C
-    [00:00:44.004,000] <inf> lm35_app: Sample=563, mV=453, LM35 temperature=45.3 °C
+    Temp: 27.000000 °C, Hum: 56.000000 %
+    Temp: 27.000000 °C, Hum: 56.000000 %
+    ...
     ```
 
 ## 依赖
